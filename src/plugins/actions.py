@@ -36,13 +36,8 @@ async def bulk_join_setup(client: Client, callback_query: CallbackQuery):
     link_msg = await client.ask(chat_id, "Send the target link (Group/Channel/Folder):")
     target_link = link_msg.text.strip()
 
-    # 3. Get Timer/Delay
-    delay_msg = await client.ask(chat_id, "Send the delay between joins in seconds (e.g., 5 or 10):")
-    try:
-        delay = int(delay_msg.text.strip())
-    except ValueError:
-        await client.send_message(chat_id, "Invalid number. Setting default to 10 seconds.")
-        delay = 10
+    # 3. Use Saved Timer/Delay
+    delay = await db.get_interval(user_id)
 
     # Start the process in background
     await client.send_message(chat_id, f"Started Bulk Join on {len(accounts)} accounts with {delay}s delay...")
@@ -123,14 +118,10 @@ async def bot_start_setup(client: Client, callback_query: CallbackQuery):
     link_msg = await client.ask(chat_id, "Send the bot start link (e.g., https://t.me/BotUsername?start=123):")
     bot_link = link_msg.text.strip()
 
-    # 3. Get Timer/Delay
-    delay_msg = await client.ask(chat_id, "Send the delay between starts in seconds:")
-    try:
-        delay = int(delay_msg.text.strip())
-    except ValueError:
-        delay = 5
+    # 3. Use Saved Timer/Delay
+    delay = await db.get_interval(user_id)
 
-    await client.send_message(chat_id, f"Starting Bots on {len(accounts)} accounts...")
+    await client.send_message(chat_id, f"Starting Bots on {len(accounts)} accounts with {delay}s delay...")
     asyncio.create_task(run_bot_start(client, chat_id, user_id, accounts, bot_link, delay))
 
 async def run_bot_start(client: Client, chat_id: int, user_id: int, accounts: list, link: str, delay: int):

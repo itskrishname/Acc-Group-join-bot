@@ -22,12 +22,15 @@ async def bulk_leave_setup(client: Client, callback_query: CallbackQuery):
     link_msg = await client.ask(chat_id, "Send the target link/username of the Chat to Leave:")
     target_link = link_msg.text.strip()
 
+    # Use Saved Timer/Delay
+    delay = await db.get_interval(user_id)
+
     # Start the process in background
-    await client.send_message(chat_id, f"Started Bulk Leave on {len(accounts)} accounts...")
-    asyncio.create_task(run_bulk_leave(client, chat_id, user_id, accounts, target_link))
+    await client.send_message(chat_id, f"Started Bulk Leave on {len(accounts)} accounts with {delay}s delay...")
+    asyncio.create_task(run_bulk_leave(client, chat_id, user_id, accounts, target_link, delay))
 
 
-async def run_bulk_leave(client: Client, chat_id: int, user_id: int, accounts: list, link: str):
+async def run_bulk_leave(client: Client, chat_id: int, user_id: int, accounts: list, link: str, delay: int):
     success = 0
     failed = 0
 
@@ -70,6 +73,6 @@ async def run_bulk_leave(client: Client, chat_id: int, user_id: int, accounts: l
             await temp_client.disconnect()
             failed += 1
 
-        await asyncio.sleep(2) # Small delay to avoid flood
+        await asyncio.sleep(delay)
 
     await client.send_message(chat_id, f"**Bulk Leave Complete!**\nSuccess: {success}\nFailed: {failed}")

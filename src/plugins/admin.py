@@ -11,17 +11,17 @@ async def is_authorized(user_id: int) -> bool:
     return bool(user)
 
 def get_main_menu(user_id: int):
-    # Depending on owner or user, we can add more buttons
+    # The new requested buttons layout
     keyboard = [
-        [InlineKeyboardButton("Dashboard & Categories", callback_data="dashboard_main")],
-        [InlineKeyboardButton("Add Account", callback_data="add_account_main")],
+        [InlineKeyboardButton("My Accounts", callback_data="manage_accounts"),
+         InlineKeyboardButton("Dashboard & Categories", callback_data="dashboard_main")],
+        [InlineKeyboardButton("Add Account", callback_data="add_account_main"),
+         InlineKeyboardButton("Set Time Interval", callback_data="set_time_interval")],
         [InlineKeyboardButton("Bulk Join", callback_data="bulk_join_setup"),
          InlineKeyboardButton("Bot Start", callback_data="bot_start_setup")],
         [InlineKeyboardButton("Bulk Leave", callback_data="bulk_leave_setup"),
          InlineKeyboardButton("Daily Report", callback_data="daily_report")]
     ]
-    if user_id == config.OWNER_ID:
-        keyboard.append([InlineKeyboardButton("Admin Settings", callback_data="admin_settings")])
     return InlineKeyboardMarkup(keyboard)
 
 @Client.on_message(filters.command("start") & filters.private)
@@ -38,8 +38,18 @@ async def start_cmd(client: Client, message: Message):
     text = (
         "**Welcome to the Group Joiner Bot!**\n\n"
         "Manage your accounts securely, join groups/channels, and automate your tasks.\n"
-        "Use the dashboard below to get started."
+        "Use the dashboard below to get started.\n\n"
     )
+
+    if user_id == config.OWNER_ID:
+        text += (
+            "**Owner Commands:**\n"
+            "`/addadmin <user_id>` - Add an admin\n"
+            "`/deladmin <user_id>` - Remove an admin\n"
+            "`/admins` - List all admins\n"
+            "`/update` - Update the bot code from git\n"
+        )
+
     await message.reply_text(text, reply_markup=get_main_menu(user_id))
 
 @Client.on_message(filters.command("addadmin") & filters.private & filters.user(config.OWNER_ID))

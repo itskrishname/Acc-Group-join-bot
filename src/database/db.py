@@ -25,9 +25,22 @@ class Database:
 
     async def add_user(self, user_id: int):
         if not await self.get_user(user_id):
-            await self.users.insert_one({"user_id": user_id})
+            await self.users.insert_one({"user_id": user_id, "interval": 10}) # default interval is 10s
             return True
         return False
+
+    async def set_interval(self, user_id: int, interval: int):
+        await self.users.update_one(
+            {"user_id": user_id},
+            {"$set": {"interval": interval}},
+            upsert=True
+        )
+
+    async def get_interval(self, user_id: int) -> int:
+        user = await self.get_user(user_id)
+        if user and "interval" in user:
+            return user["interval"]
+        return 10
 
     async def remove_user(self, user_id: int):
         if await self.get_user(user_id):

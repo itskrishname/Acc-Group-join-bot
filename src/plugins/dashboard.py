@@ -18,12 +18,23 @@ async def dashboard_main_cb(client: Client, callback_query: CallbackQuery):
 @Client.on_callback_query(filters.regex(r"^back_to_start$"))
 async def back_to_start_cb(client: Client, callback_query: CallbackQuery):
     from src.plugins.admin import get_main_menu
+    from src import config
     user_id = callback_query.from_user.id
     text = (
         "**Welcome to the Group Joiner Bot!**\n\n"
         "Manage your accounts securely, join groups/channels, and automate your tasks.\n"
-        "Use the dashboard below to get started."
+        "Use the dashboard below to get started.\n\n"
     )
+
+    if user_id == config.OWNER_ID:
+        text += (
+            "**Owner Commands:**\n"
+            "`/addadmin <user_id>` - Add an admin\n"
+            "`/deladmin <user_id>` - Remove an admin\n"
+            "`/admins` - List all admins\n"
+            "`/update` - Update the bot code from git\n"
+        )
+
     await callback_query.message.edit_text(text, reply_markup=get_main_menu(user_id))
 
 # --- Categories ---
@@ -85,6 +96,25 @@ async def delete_category_cb(client: Client, callback_query: CallbackQuery):
         await client.send_message(chat_id, f"Category **{cat_name}** and its accounts deleted.")
     else:
         await client.send_message(chat_id, "Category not found or deletion failed.")
+
+@Client.on_callback_query(filters.regex(r"^set_time_interval$"))
+async def set_time_interval_cb(client: Client, callback_query: CallbackQuery):
+    user_id = callback_query.from_user.id
+    chat_id = callback_query.message.chat.id
+
+    await callback_query.message.delete()
+
+    current_interval = await db.get_interval(user_id)
+    msg = await client.ask(chat_id, f"Current Time Interval is **{current_interval} seconds**.\n\nSend the new interval in seconds (e.g., 5, 10, 15):")
+
+    try:
+        new_interval = int(msg.text.strip())
+        if new_interval < 0:
+            raise ValueError
+        await db.set_interval(user_id, new_interval)
+        await client.send_message(chat_id, f"✅ Time interval updated to **{new_interval} seconds**.")
+    except ValueError:
+        await client.send_message(chat_id, "❌ Invalid number. Interval not changed.")
 
 # --- Accounts ---
 @Client.on_callback_query(filters.regex(r"^manage_accounts$"))
