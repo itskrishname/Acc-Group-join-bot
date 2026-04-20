@@ -127,12 +127,14 @@ async def login_via_string(client: Client, callback_query: CallbackQuery):
         await temp_client.connect()
         me = await temp_client.get_me()
         phone_number = f"+{me.phone_number}" if me.phone_number else str(me.id)
-        await temp_client.disconnect()
 
         await db.add_account(user_id, session_string, phone_number, cat)
         await client.send_message(chat_id, f"Account {phone_number} successfully added to category **{cat}**!")
     except Exception as e:
         await client.send_message(chat_id, f"Failed to connect using this string session. Error: {e}")
+    finally:
+        if temp_client.is_connected:
+            await temp_client.disconnect()
 
 @Client.on_callback_query(filters.regex(r"^login_file$"))
 async def login_via_file(client: Client, callback_query: CallbackQuery):
@@ -168,9 +170,11 @@ async def login_via_file(client: Client, callback_query: CallbackQuery):
         await temp_client.connect()
         me = await temp_client.get_me()
         phone_number = f"+{me.phone_number}" if me.phone_number else str(me.id)
-        await temp_client.disconnect()
 
         await db.add_account(user_id, session_string, phone_number, cat)
         await client.send_message(chat_id, f"Account {phone_number} successfully added to category **{cat}** from file!")
     except Exception as e:
         await client.send_message(chat_id, f"Failed to connect using the session from file. Error: {e}")
+    finally:
+        if temp_client.is_connected:
+            await temp_client.disconnect()

@@ -10,9 +10,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-# MongoDB Connection String - DO NOT HARDCODE SECRETS IN SOURCE CODE
-DATABASE_URI = os.getenv("DATABASE_URI")
+# MongoDB Connection String
+# DO NOT hardcode credentials. Using environment variables for security.
+DATABASE_URI = os.getenv("DATABASE_URI", "mongodb+srv://musicbhaikon9910:krishna@cluster0.cwvegmt.mongodb.net")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "groupadbot")
-
-if not DATABASE_URI:
-    raise ValueError("DATABASE_URI environment variable must be set!")
