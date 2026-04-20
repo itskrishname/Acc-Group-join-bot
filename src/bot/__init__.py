@@ -1,4 +1,5 @@
 import logging
+from pyromod import listen
 from pyrogram import Client, __version__
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from src import config
