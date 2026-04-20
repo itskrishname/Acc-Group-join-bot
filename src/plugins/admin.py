@@ -92,3 +92,23 @@ async def list_admins_cmd(client: Client, message: Message):
         text += f"- `{uid}` ({role})\n"
 
     await message.reply_text(text)
+
+@Client.on_message(filters.command("update") & filters.private & filters.user(config.OWNER_ID))
+async def update_bot_cmd(client: Client, message: Message):
+    import os
+    import sys
+    import subprocess
+
+    m = await message.reply_text("🔄 Checking for updates...")
+    try:
+        # Fetch latest code from git
+        out = subprocess.check_output(["git", "pull"]).decode("utf-8")
+        if "Already up to date." in out:
+            await m.edit_text("Bot is already up to date.")
+            return
+
+        await m.edit_text(f"✅ Update found and pulled!\n\n`{out}`\n\nRestarting bot...")
+        # Restart the process
+        os.execl(sys.executable, sys.executable, "-m", "src")
+    except Exception as e:
+        await m.edit_text(f"❌ Failed to update bot.\n\nError: `{str(e)}`")
