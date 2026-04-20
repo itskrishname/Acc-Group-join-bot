@@ -67,24 +67,28 @@ async def run_bulk_join(client: Client, chat_id: int, user_id: int, accounts: li
         try:
             await temp_client.connect()
             # Handle Folder join vs normal chat
-            if "addlist" in link or "folder" in link:
+            if "addlist/" in link or "folder/" in link:
                 # To join a folder, we use CheckChatlistInvite to get chats, then JoinChatlistInvite to join
                 from pyrogram.raw.functions.chatlists import CheckChatlistInvite, JoinChatlistInvite
                 # Extract the slug from the link
-                # e.g., https://t.me/addlist/slug_string
+                # e.g., https://t.me/addlist/slug_string or https://t.me/folder/slug_string
                 import re
-                match = re.search(r"addlist/(.+)", link)
+                match = re.search(r"(?:addlist|folder)/(.+)", link)
                 if match:
                     slug = match.group(1)
                     # Check what chats are in the folder
                     invite_info = await temp_client.invoke(CheckChatlistInvite(slug=slug))
-                    # Join the folder with all its chats
-                    # We pass the list of missing peers that the user hasn't joined yet
-                    if hasattr(invite_info, 'already_peers'):
-                        # If the user has already joined all chats, do nothing
-                        peers_to_join = invite_info.missing_peers if hasattr(invite_info, 'missing_peers') else []
-                        if peers_to_join:
-                            await temp_client.invoke(JoinChatlistInvite(slug=slug, peers=peers_to_join))
+
+                    peers_to_join = []
+                    # chatlistInviteAlready object (user already joined some)
+                    if hasattr(invite_info, 'missing_peers'):
+                        peers_to_join = invite_info.missing_peers
+                    # chatlistInvite object (brand new folder for user)
+                    elif hasattr(invite_info, 'peers'):
+                        peers_to_join = invite_info.peers
+
+                    if peers_to_join:
+                        await temp_client.invoke(JoinChatlistInvite(slug=slug, peers=peers_to_join))
             else:
                 await temp_client.join_chat(link)
 

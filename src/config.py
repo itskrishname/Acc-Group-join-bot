@@ -6,6 +6,13 @@ OWNER_ID = 7660990923
 
 import os
 
-# MongoDB Connection String
-DATABASE_URI = os.getenv("DATABASE_URI", "mongodb+srv://<USER>:<PASSWORD>@cluster0.cwvegmt.mongodb.net")
-DATABASE_NAME = os.getenv("DATABASE_NAME", "file_sharing_bot")
+# Load from .env if present
+from dotenv import load_dotenv
+load_dotenv()
+
+# MongoDB Connection String - DO NOT HARDCODE SECRETS IN SOURCE CODE
+DATABASE_URI = os.getenv("DATABASE_URI")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "groupadbot")
+
+if not DATABASE_URI:
+    raise ValueError("DATABASE_URI environment variable must be set!")
