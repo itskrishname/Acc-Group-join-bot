@@ -1,7 +1,7 @@
 # Telegram API Credentials (Get from https://my.telegram.org)
 API_ID = 28891870
 API_HASH = "ffc3794690bf254d2867ac58fd293a60"
-BOT_TOKEN = "your_bot_token_here"
+BOT_TOKEN = "8121712200:AAGCTolWz8zyum3T-e013LMrj_6rncQAsRc"
 OWNER_ID = 7660990923
 
 import os
