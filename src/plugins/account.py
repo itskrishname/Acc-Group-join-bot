@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message, CallbackQuery
+from pyrogram.types import Message, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from pyromod import listen
 from src import config
 from src.database import db
@@ -11,11 +11,19 @@ async def request_category(client: Client, message: Message, user_id: int):
         await message.reply_text("You don't have any categories. Please create one from the dashboard first.")
         return None
 
-    cat_text = "Select a Category for this account:\n\n"
-    for i, cat in enumerate(categories, 1):
-        cat_text += f"{i}. {cat}\n"
+    keyboard = []
+    row = []
+    for cat in categories:
+        row.append(KeyboardButton(cat))
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+    if row:
+        keyboard.append(row)
 
-    cat_msg = await client.ask(message.chat.id, cat_text + "\nSend the EXACT category name from the list above:")
+    markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
+
+    cat_msg = await client.ask(message.chat.id, "Select a Category for this account:", reply_markup=markup)
     if cat_msg.text not in categories:
         await message.reply_text("Invalid category selected. Process cancelled.")
         return None
@@ -54,7 +62,7 @@ async def login_via_phone(client: Client, callback_query: CallbackQuery):
     cat = await request_category(client, callback_query.message, user_id)
     if not cat: return
 
-    phone_msg = await client.ask(chat_id, "Send the phone number with country code (e.g., +1234567890):")
+    phone_msg = await client.ask(chat_id, "Send the phone number with country code (e.g., +1234567890):", reply_markup=ReplyKeyboardRemove())
     phone_number = phone_msg.text.strip()
 
     temp_client = Client(
@@ -111,7 +119,7 @@ async def login_via_string(client: Client, callback_query: CallbackQuery):
     cat = await request_category(client, callback_query.message, user_id)
     if not cat: return
 
-    string_msg = await client.ask(chat_id, "Send the Pyrogram String Session:")
+    string_msg = await client.ask(chat_id, "Send the Pyrogram String Session:", reply_markup=ReplyKeyboardRemove())
     session_string = string_msg.text.strip()
 
     # Try to login to get phone number
@@ -146,7 +154,7 @@ async def login_via_file(client: Client, callback_query: CallbackQuery):
     cat = await request_category(client, callback_query.message, user_id)
     if not cat: return
 
-    file_msg = await client.ask(chat_id, "Send the .txt file containing the String Session:")
+    file_msg = await client.ask(chat_id, "Send the .txt file containing the String Session:", reply_markup=ReplyKeyboardRemove())
     if not file_msg.document:
         await client.send_message(chat_id, "No document found. Process cancelled.")
         return

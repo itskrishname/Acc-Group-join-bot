@@ -1,6 +1,6 @@
 import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import CallbackQuery
+from pyrogram.types import CallbackQuery, ReplyKeyboardRemove
 from src import config
 from src.database import db
 from src.plugins.actions import select_accounts_flow
@@ -15,11 +15,11 @@ async def bulk_leave_setup(client: Client, callback_query: CallbackQuery):
     # 1. Get Accounts
     accounts = await select_accounts_flow(client, chat_id, user_id)
     if not accounts:
-        await client.send_message(chat_id, "No accounts found for your selection.")
+        await client.send_message(chat_id, "No accounts found for your selection.", reply_markup=ReplyKeyboardRemove())
         return
 
     # 2. Get Target Link/Username
-    link_msg = await client.ask(chat_id, "Send the target link/username of the Chat to Leave:")
+    link_msg = await client.ask(chat_id, "Send the target link/username of the Chat to Leave:", reply_markup=ReplyKeyboardRemove())
     target_link = link_msg.text.strip()
 
     # Use Saved Timer/Delay

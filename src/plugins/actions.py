@@ -1,6 +1,6 @@
 import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from pyromod import listen
 from src import config
 from src.database import db
@@ -8,7 +8,23 @@ from src.database import db
 # Helper to get target accounts based on user choice
 async def select_accounts_flow(client: Client, chat_id: int, user_id: int):
     # Ask if they want a specific category or ALL
-    choice_msg = await client.ask(chat_id, "Type 'ALL' to use all accounts, or send the EXACT name of a Category:")
+    categories = await db.get_categories(user_id)
+
+    keyboard = [[KeyboardButton("ALL")]]
+
+    # Arrange categories in rows of 2
+    row = []
+    for cat in categories:
+        row.append(KeyboardButton(cat))
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+    if row:
+        keyboard.append(row)
+
+    markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
+
+    choice_msg = await client.ask(chat_id, "Select 'ALL' to use all accounts, or select a specific Category:", reply_markup=markup)
     choice = choice_msg.text.strip()
 
     if choice.upper() == 'ALL':
@@ -29,11 +45,11 @@ async def bulk_join_setup(client: Client, callback_query: CallbackQuery):
     # 1. Get Accounts
     accounts = await select_accounts_flow(client, chat_id, user_id)
     if not accounts:
-        await client.send_message(chat_id, "No accounts found for your selection.")
+        await client.send_message(chat_id, "No accounts found for your selection.", reply_markup=ReplyKeyboardRemove())
         return
 
     # 2. Get Target Link
-    link_msg = await client.ask(chat_id, "Send the target link (Group/Channel/Folder):")
+    link_msg = await client.ask(chat_id, "Send the target link (Group/Channel/Folder):", reply_markup=ReplyKeyboardRemove())
     target_link = link_msg.text.strip()
 
     # 3. Use Saved Timer/Delay
@@ -111,11 +127,11 @@ async def bot_start_setup(client: Client, callback_query: CallbackQuery):
     # 1. Get Accounts
     accounts = await select_accounts_flow(client, chat_id, user_id)
     if not accounts:
-        await client.send_message(chat_id, "No accounts found for your selection.")
+        await client.send_message(chat_id, "No accounts found for your selection.", reply_markup=ReplyKeyboardRemove())
         return
 
     # 2. Get Bot Link
-    link_msg = await client.ask(chat_id, "Send the bot start link (e.g., https://t.me/BotUsername?start=123):")
+    link_msg = await client.ask(chat_id, "Send the bot start link (e.g., https://t.me/BotUsername?start=123):", reply_markup=ReplyKeyboardRemove())
     bot_link = link_msg.text.strip()
 
     # 3. Use Saved Timer/Delay

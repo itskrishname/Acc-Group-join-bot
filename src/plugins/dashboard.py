@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from pyromod import listen
 from src.database import db
 
@@ -84,18 +84,26 @@ async def delete_category_cb(client: Client, callback_query: CallbackQuery):
 
     await callback_query.message.delete()
 
-    cat_text = "Select a Category to delete (This will ALSO delete all accounts in it!):\n\n"
-    for i, cat in enumerate(categories, 1):
-        cat_text += f"{i}. {cat}\n"
+    keyboard = []
+    row = []
+    for cat in categories:
+        row.append(KeyboardButton(cat))
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+    if row:
+        keyboard.append(row)
 
-    cat_msg = await client.ask(chat_id, cat_text + "\nSend the exact name of the category to delete:")
+    markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
+
+    cat_msg = await client.ask(chat_id, "Select a Category to delete (This will ALSO delete all accounts in it!):", reply_markup=markup)
     cat_name = cat_msg.text.strip()
 
     success = await db.remove_category(user_id, cat_name)
     if success:
-        await client.send_message(chat_id, f"Category **{cat_name}** and its accounts deleted.")
+        await client.send_message(chat_id, f"Category **{cat_name}** and its accounts deleted.", reply_markup=ReplyKeyboardRemove())
     else:
-        await client.send_message(chat_id, "Category not found or deletion failed.")
+        await client.send_message(chat_id, "Category not found or deletion failed.", reply_markup=ReplyKeyboardRemove())
 
 @Client.on_callback_query(filters.regex(r"^set_time_interval$"))
 async def set_time_interval_cb(client: Client, callback_query: CallbackQuery):
