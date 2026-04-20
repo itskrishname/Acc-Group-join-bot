@@ -1,0 +1,7 @@
+pyrogram
+tgcrypto
+motor
+apscheduler
+asyncio
+python-dotenv
+pyromod
