@@ -12,10 +12,11 @@ async def check_account_health(user_id: int, account: dict):
     Connects to the account and messages @SpamBot to check if frozen/restricted.
     Returns the updated status.
     """
+    api_creds = config.get_random_api()
     temp_client = Client(
         name=f"temp_health_{account['phone_number']}",
-        api_id=config.API_ID,
-        api_hash=config.API_HASH,
+        api_id=api_creds["API_ID"],
+        api_hash=api_creds["API_HASH"],
         session_string=account['session_string'],
         in_memory=True
     )

@@ -65,10 +65,11 @@ async def login_via_phone(client: Client, callback_query: CallbackQuery):
     phone_msg = await client.ask(chat_id, "Send the phone number with country code (e.g., +1234567890):", reply_markup=ReplyKeyboardRemove())
     phone_number = phone_msg.text.strip()
 
+    api_creds = config.get_random_api()
     temp_client = Client(
         name=f"temp_{user_id}",
-        api_id=config.API_ID,
-        api_hash=config.API_HASH,
+        api_id=api_creds["API_ID"],
+        api_hash=api_creds["API_HASH"],
         in_memory=True
     )
 
@@ -123,10 +124,11 @@ async def login_via_string(client: Client, callback_query: CallbackQuery):
     session_string = string_msg.text.strip()
 
     # Try to login to get phone number
+    api_creds = config.get_random_api()
     temp_client = Client(
         name=f"temp_{user_id}",
-        api_id=config.API_ID,
-        api_hash=config.API_HASH,
+        api_id=api_creds["API_ID"],
+        api_hash=api_creds["API_HASH"],
         session_string=session_string,
         in_memory=True
     )
@@ -166,10 +168,11 @@ async def login_via_file(client: Client, callback_query: CallbackQuery):
     import os
     os.remove(file_path)
 
+    api_creds = config.get_random_api()
     temp_client = Client(
         name=f"temp_{user_id}",
-        api_id=config.API_ID,
-        api_hash=config.API_HASH,
+        api_id=api_creds["API_ID"],
+        api_hash=api_creds["API_HASH"],
         session_string=session_string,
         in_memory=True
     )

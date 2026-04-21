@@ -49,10 +49,11 @@ async def run_bulk_leave(client: Client, chat_id: int, user_id: int, accounts: l
             failed += 1
             continue
 
+        api_creds = config.get_random_api()
         temp_client = Client(
             name=f"temp_leave_{acc['phone_number']}",
-            api_id=config.API_ID,
-            api_hash=config.API_HASH,
+            api_id=api_creds["API_ID"],
+            api_hash=api_creds["API_HASH"],
             session_string=acc['session_string'],
             in_memory=True
         )

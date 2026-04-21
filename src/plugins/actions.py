@@ -68,10 +68,11 @@ async def run_bulk_join(client: Client, chat_id: int, user_id: int, accounts: li
             failed += 1
             continue
 
+        api_creds = config.get_random_api()
         temp_client = Client(
             name=f"temp_join_{acc['phone_number']}",
-            api_id=config.API_ID,
-            api_hash=config.API_HASH,
+            api_id=api_creds["API_ID"],
+            api_hash=api_creds["API_HASH"],
             session_string=acc['session_string'],
             in_memory=True
         )
@@ -165,10 +166,11 @@ async def run_bot_start(client: Client, chat_id: int, user_id: int, accounts: li
             failed += 1
             continue
 
+        api_creds = config.get_random_api()
         temp_client = Client(
             name=f"temp_bot_{acc['phone_number']}",
-            api_id=config.API_ID,
-            api_hash=config.API_HASH,
+            api_id=api_creds["API_ID"],
+            api_hash=api_creds["API_HASH"],
             session_string=acc['session_string'],
             in_memory=True
         )
